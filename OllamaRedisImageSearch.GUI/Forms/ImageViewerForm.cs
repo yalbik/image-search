@@ -5,14 +5,16 @@ namespace OllamaRedisImageSearch.GUI.Forms;
 public partial class ImageViewerForm : Form
 {
     private SearchResult _searchResult;
+    private string? _relevancyInfo;
     private PictureBox _pictureBox = null!;
-    private Label _descriptionLabel = null!;
+    private RichTextBox _descriptionTextBox = null!;
     private Label _filenameLabel = null!;
     private Label _scoreLabel = null!;
 
-    public ImageViewerForm(SearchResult searchResult)
+    public ImageViewerForm(SearchResult searchResult, string? relevancyInfo = null)
     {
         _searchResult = searchResult;
+        _relevancyInfo = relevancyInfo;
         InitializeComponent();
         LoadImage();
     }
@@ -23,9 +25,9 @@ public partial class ImageViewerForm : Form
 
         // Form properties
         this.Text = $"Image Viewer - {Path.GetFileNameWithoutExtension(_searchResult.Filename)}";
-        this.Size = new Size(800, 700);
+        this.Size = new Size(900, 800);
         this.StartPosition = FormStartPosition.CenterParent;
-        this.MinimumSize = new Size(400, 300);
+        this.MinimumSize = new Size(600, 500);
 
         // Filename label
         _filenameLabel = new Label
@@ -50,34 +52,66 @@ public partial class ImageViewerForm : Form
         _pictureBox = new PictureBox
         {
             Location = new Point(10, 60),
-            Size = new Size(760, 400),
-            Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom,
+            Size = new Size(860, 400),
+            Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
             SizeMode = PictureBoxSizeMode.Zoom,
             BorderStyle = BorderStyle.FixedSingle
         };
 
-        // Description label
-        _descriptionLabel = new Label
+        // Description text box (scrollable)
+        _descriptionTextBox = new RichTextBox
         {
-            Text = "Description: " + _searchResult.Description,
-            Font = new Font("Segoe UI", 9, FontStyle.Regular),
             Location = new Point(10, 470),
-            Size = new Size(760, 180),
-            Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
-            AutoEllipsis = true,
-            BackColor = Color.LightGray,
-            Padding = new Padding(5),
-            BorderStyle = BorderStyle.FixedSingle
+            Size = new Size(860, 280),
+            Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top,
+            ReadOnly = true,
+            Font = new Font("Segoe UI", 9, FontStyle.Regular),
+            BackColor = Color.White,
+            BorderStyle = BorderStyle.FixedSingle,
+            ScrollBars = RichTextBoxScrollBars.Vertical
         };
+
+        // Set the description text with relevancy information
+        SetDescriptionText();
 
         // Add controls
         this.Controls.Add(_filenameLabel);
         this.Controls.Add(_scoreLabel);
         this.Controls.Add(_pictureBox);
-        this.Controls.Add(_descriptionLabel);
+        this.Controls.Add(_descriptionTextBox);
 
         this.ResumeLayout(false);
         this.PerformLayout();
+    }
+
+    private void SetDescriptionText()
+    {
+        _descriptionTextBox.Clear();
+        
+        // Add description section
+        _descriptionTextBox.SelectionFont = new Font("Segoe UI", 10, FontStyle.Bold);
+        _descriptionTextBox.SelectionColor = Color.DarkBlue;
+        _descriptionTextBox.AppendText("Image Description:\n");
+        
+        _descriptionTextBox.SelectionFont = new Font("Segoe UI", 9, FontStyle.Regular);
+        _descriptionTextBox.SelectionColor = Color.Black;
+        _descriptionTextBox.AppendText(_searchResult.Description + "\n\n");
+        
+        // Add relevancy information if available
+        if (!string.IsNullOrEmpty(_relevancyInfo))
+        {
+            _descriptionTextBox.SelectionFont = new Font("Segoe UI", 10, FontStyle.Bold);
+            _descriptionTextBox.SelectionColor = Color.DarkGreen;
+            _descriptionTextBox.AppendText("Relevancy Analysis:\n");
+            
+            _descriptionTextBox.SelectionFont = new Font("Segoe UI", 9, FontStyle.Regular);
+            _descriptionTextBox.SelectionColor = Color.Black;
+            _descriptionTextBox.AppendText(_relevancyInfo);
+        }
+        
+        // Reset selection to start
+        _descriptionTextBox.SelectionStart = 0;
+        _descriptionTextBox.SelectionLength = 0;
     }
 
     private void LoadImage()

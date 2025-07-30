@@ -13,7 +13,7 @@ public class AppConfig
     public int MaxConcurrentOperations { get; set; } = 5;
     
     // Model configurations
-    public string VisionModel { get; set; } = "llava:13b";
+    public string VisionModel { get; set; } = "llava:34b";
     public string EmbeddingModel { get; set; } = "nomic-embed-text:latest";
     public string SummarizationModel { get; set; } = "gemma3:4b";
     
@@ -24,4 +24,7 @@ public class AppConfig
     // Deduplication configurations
     public bool EnableDeduplication { get; set; } = true;
     public bool ForceReindex { get; set; } = false;
+    
+    // GPU/VRAM management
+    public bool AutoFlushVramOnModelSwitch { get; set; } = true;
 }

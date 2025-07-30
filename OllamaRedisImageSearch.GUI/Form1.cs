@@ -12,10 +12,13 @@ public partial class Form1 : Form
     private IOllamaService? _ollamaService;
     private IRedisVectorService? _redisService;
     private IImageSearchService? _imageSearchService;
+    private SearchResultWithSummary? _currentSearchResult;
     
     private TextBox _searchTextBox = null!;
     private Button _searchButton = null!;
     private Button _indexButton = null!;
+    private ComboBox _modelComboBox = null!;
+    private Label _modelLabel = null!;
     private FlowLayoutPanel _resultsPanel = null!;
     private Label _statusLabel = null!;
     private ProgressBar _progressBar = null!;
@@ -67,6 +70,26 @@ public partial class Form1 : Form
             Enabled = false
         };
         _indexButton.Click += IndexButton_Click;
+
+        // Model selection label
+        _modelLabel = new Label
+        {
+            Text = "Summarization Model:",
+            Location = new Point(650, 15),
+            Size = new Size(150, 20),
+            Font = new Font("Segoe UI", 9)
+        };
+
+        // Model selection combo box
+        _modelComboBox = new ComboBox
+        {
+            Location = new Point(810, 12),
+            Size = new Size(200, 25),
+            DropDownStyle = ComboBoxStyle.DropDownList,
+            Font = new Font("Segoe UI", 9),
+            Enabled = false
+        };
+        _modelComboBox.SelectedIndexChanged += ModelComboBox_SelectedIndexChanged;
 
         // Status label
         _statusLabel = new Label
@@ -123,6 +146,8 @@ public partial class Form1 : Form
         this.Controls.Add(_searchTextBox);
         this.Controls.Add(_searchButton);
         this.Controls.Add(_indexButton);
+        this.Controls.Add(_modelLabel);
+        this.Controls.Add(_modelComboBox);
         this.Controls.Add(_statusLabel);
         this.Controls.Add(_progressBar);
         this.Controls.Add(_resultsPanel);
@@ -172,11 +197,30 @@ public partial class Form1 : Form
             _redisService = new RedisVectorService(_config);
             _imageSearchService = new ImageSearchService(_ollamaService, _redisService, _config);
 
+            // Flush VRAM at startup to ensure clean GPU state
+            if (_config.AutoFlushVramOnModelSwitch)
+            {
+                _statusLabel.Text = "Flushing GPU memory at startup...";
+                try
+                {
+                    await _ollamaService.UnloadAllModelsAsync();
+                    Console.WriteLine("VRAM flushed at application startup");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Warning: Could not flush VRAM at startup: {ex.Message}");
+                }
+            }
+
             if (await _imageSearchService.InitializeAsync())
             {
-                _statusLabel.Text = "✅ Ready! Enter a search query or index images first.";
+                _statusLabel.Text = "✅ Ready! Loading available models...";
                 _searchButton.Enabled = true;
                 _indexButton.Enabled = true;
+                
+                // Load available models after successful initialization
+                await LoadAvailableModelsAsync();
+                _statusLabel.Text = "✅ Ready! Enter a search query or index images first.";
             }
             else
             {
@@ -220,6 +264,80 @@ public partial class Form1 : Form
         }
     }
 
+    private async Task LoadAvailableModelsAsync()
+    {
+        if (_ollamaService == null) return;
+
+        try
+        {
+            var models = await _ollamaService.GetAvailableModelsAsync();
+            _modelComboBox.Items.Clear();
+            
+            foreach (var model in models)
+            {
+                _modelComboBox.Items.Add(model);
+            }
+
+            // Set current selection to the configured summarization model
+            var currentModel = _config.SummarizationModel;
+            var index = _modelComboBox.Items.IndexOf(currentModel);
+            if (index >= 0)
+            {
+                _modelComboBox.SelectedIndex = index;
+            }
+            else if (_modelComboBox.Items.Count > 0)
+            {
+                _modelComboBox.SelectedIndex = 0;
+            }
+
+            _modelComboBox.Enabled = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading models: {ex.Message}");
+            _modelComboBox.Items.Add(_config.SummarizationModel);
+            _modelComboBox.SelectedIndex = 0;
+            _modelComboBox.Enabled = false;
+        }
+    }
+
+    private async void ModelComboBox_SelectedIndexChanged(object? sender, EventArgs e)
+    {
+        if (_modelComboBox.SelectedItem != null && _ollamaService != null)
+        {
+            var oldModel = _config.SummarizationModel;
+            var newModel = _modelComboBox.SelectedItem.ToString() ?? _config.SummarizationModel;
+            
+            if (oldModel != newModel)
+            {
+                _config.SummarizationModel = newModel;
+                
+                // Auto-flush VRAM if enabled in config
+                if (_config.AutoFlushVramOnModelSwitch)
+                {
+                    _statusLabel.Text = "Flushing GPU memory and switching model...";
+                    
+                    try
+                    {
+                        await _ollamaService.UnloadAllModelsAsync();
+                        Console.WriteLine($"VRAM flushed. Summarization model changed from {oldModel} to {newModel}");
+                        _statusLabel.Text = "✅ Ready! GPU memory flushed and model switched.";
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error flushing VRAM during model switch: {ex.Message}");
+                        _statusLabel.Text = "⚠️ Model switched but VRAM flush failed.";
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Summarization model changed from {oldModel} to {newModel}");
+                    _statusLabel.Text = "✅ Ready! Model switched.";
+                }
+            }
+        }
+    }
+
     private async void SearchButton_Click(object? sender, EventArgs e)
     {
         var query = _searchTextBox.Text.Trim();
@@ -246,6 +364,7 @@ public partial class Form1 : Form
             _summaryTextBox.Text = "Searching... This may take a moment.";
 
             var searchResult = await _imageSearchService.SearchWithSummaryAsync(query);
+            _currentSearchResult = searchResult;
             
             if (searchResult.Results.Count == 0)
             {
@@ -338,7 +457,8 @@ public partial class Form1 : Form
             
             thumbnail.ThumbnailClicked += (s, searchResult) =>
             {
-                var viewer = new ImageViewerForm(searchResult);
+                var relevancyInfo = ExtractRelevancyInfo(searchResult);
+                var viewer = new ImageViewerForm(searchResult, relevancyInfo);
                 viewer.ShowDialog(this);
             };
 
@@ -355,6 +475,50 @@ Summarization Time: {metrics.SummarizationTime.TotalMilliseconds:F0}ms
 Total Time: {(metrics.EmbeddingTime + metrics.SearchTime + metrics.SummarizationTime).TotalMilliseconds:F0}ms
 Results Processed: {metrics.ResultsProcessed}
 Estimated Tokens Used: {metrics.TokensUsed}";
+    }
+
+    private string? ExtractRelevancyInfo(SearchResult searchResult)
+    {
+        if (_currentSearchResult?.Summary == null)
+            return null;
+
+        var summary = _currentSearchResult.Summary;
+        var filename = searchResult.Filename;
+        
+        // Try to extract information about this specific image from the summary
+        // Look for the filename or partial filename in the summary
+        var lines = summary.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        var relevantLines = new List<string>();
+        
+        foreach (var line in lines)
+        {
+            // Check if the line mentions this specific image
+            if (line.Contains(filename, StringComparison.OrdinalIgnoreCase) ||
+                line.Contains(Path.GetFileNameWithoutExtension(filename), StringComparison.OrdinalIgnoreCase))
+            {
+                relevantLines.Add(line.Trim());
+            }
+        }
+        
+        if (relevantLines.Count > 0)
+        {
+            return string.Join("\n", relevantLines);
+        }
+        
+        // If no specific mention, return a generic relevancy based on similarity score
+        return $"This image has a similarity score of {searchResult.Score:F3}, indicating it's a {GetRelevancyDescription(searchResult.Score)} match for your search query.";
+    }
+    
+    private string GetRelevancyDescription(float score)
+    {
+        return score switch
+        {
+            >= 0.8f => "very strong",
+            >= 0.6f => "strong",
+            >= 0.4f => "moderate",
+            >= 0.2f => "weak",
+            _ => "minimal"
+        };
     }
 
     protected override void Dispose(bool disposing)

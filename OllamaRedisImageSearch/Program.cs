@@ -58,6 +58,21 @@ class Program
         using var redisService = new RedisVectorService(_config);
         using var imageSearchService = new ImageSearchService(ollamaService, redisService, _config);
 
+        // Flush VRAM at startup to ensure clean GPU state
+        if (_config.AutoFlushVramOnModelSwitch)
+        {
+            Console.WriteLine("Flushing GPU memory at startup...");
+            try
+            {
+                await ollamaService.UnloadAllModelsAsync();
+                Console.WriteLine("✅ VRAM flushed at application startup");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️  Warning: Could not flush VRAM at startup: {ex.Message}");
+            }
+        }
+
         // Initialize the search service
         var initialized = await imageSearchService.InitializeAsync();
         if (!initialized)

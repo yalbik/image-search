@@ -5,8 +5,6 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OllamaRedisImageSearch", "OllamaRedisImageSearch\OllamaRedisImageSearch.csproj", "{FE4B9A47-8E33-46A9-A1C8-2680309F8846}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OllamaRedisImageSearch.Tests", "OllamaRedisImageSearch.Tests\OllamaRedisImageSearch.Tests.csproj", "{F69534BD-FBE6-4EAB-BBEA-FA0DCA60A344}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OllamaRedisImageSearch.GUI", "OllamaRedisImageSearch.GUI\OllamaRedisImageSearch.GUI.csproj", "{DCB99347-E990-49FA-ACE1-54134A4C6FFB}"
 EndProject
 Global
@@ -31,18 +29,6 @@ Global
 		{FE4B9A47-8E33-46A9-A1C8-2680309F8846}.Release|x64.Build.0 = Release|Any CPU
 		{FE4B9A47-8E33-46A9-A1C8-2680309F8846}.Release|x86.ActiveCfg = Release|Any CPU
 		{FE4B9A47-8E33-46A9-A1C8-2680309F8846}.Release|x86.Build.0 = Release|Any CPU
-		{F69534BD-FBE6-4EAB-BBEA-FA0DCA60A344}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F69534BD-FBE6-4EAB-BBEA-FA0DCA60A344}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F69534BD-FBE6-4EAB-BBEA-FA0DCA60A344}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{F69534BD-FBE6-4EAB-BBEA-FA0DCA60A344}.Debug|x64.Build.0 = Debug|Any CPU
-		{F69534BD-FBE6-4EAB-BBEA-FA0DCA60A344}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{F69534BD-FBE6-4EAB-BBEA-FA0DCA60A344}.Debug|x86.Build.0 = Debug|Any CPU
-		{F69534BD-FBE6-4EAB-BBEA-FA0DCA60A344}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F69534BD-FBE6-4EAB-BBEA-FA0DCA60A344}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F69534BD-FBE6-4EAB-BBEA-FA0DCA60A344}.Release|x64.ActiveCfg = Release|Any CPU
-		{F69534BD-FBE6-4EAB-BBEA-FA0DCA60A344}.Release|x64.Build.0 = Release|Any CPU
-		{F69534BD-FBE6-4EAB-BBEA-FA0DCA60A344}.Release|x86.ActiveCfg = Release|Any CPU
-		{F69534BD-FBE6-4EAB-BBEA-FA0DCA60A344}.Release|x86.Build.0 = Release|Any CPU
 		{DCB99347-E990-49FA-ACE1-54134A4C6FFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DCB99347-E990-49FA-ACE1-54134A4C6FFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCB99347-E990-49FA-ACE1-54134A4C6FFB}.Debug|x64.ActiveCfg = Debug|Any CPU
