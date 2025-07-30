@@ -8,6 +8,7 @@ public interface IImageSearchService : IDisposable
     Task<bool> InitializeAsync();
     Task<bool> IndexImagesAsync(string imagesPath);
     Task<List<SearchResult>> SearchAsync(string query);
+    Task<SearchResultWithSummary> SearchWithSummaryAsync(string query);
     Task<McpMetrics> GetLastSearchMetricsAsync();
     Task<(int total, int indexed, int skipped)> GetIndexingStatsAsync(string imagesPath);
 }
@@ -201,6 +202,70 @@ public class ImageSearchService : IImageSearchService
             Console.WriteLine($"Results Processed: {metrics.ResultsProcessed}");
             Console.WriteLine($"Estimated Tokens Used: {metrics.TokensUsed}");
             Console.WriteLine("============================");
+        }
+    }
+
+    public async Task<SearchResultWithSummary> SearchWithSummaryAsync(string query)
+    {
+        var result = new SearchResultWithSummary();
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var metrics = new McpMetrics { Timestamp = DateTime.UtcNow };
+
+        try
+        {
+            Console.WriteLine($"Searching for: {query}");
+
+            // Generate query embedding
+            var embeddingStart = stopwatch.Elapsed;
+            var queryEmbedding = await _ollamaService.GetTextEmbeddingAsync(query);
+            metrics.EmbeddingTime = stopwatch.Elapsed - embeddingStart;
+
+            if (queryEmbedding.Length == 0)
+            {
+                Console.WriteLine("Failed to generate query embedding");
+                return result;
+            }
+
+            // Perform vector search
+            var searchStart = stopwatch.Elapsed;
+            var searchResults = await _redisService.SearchSimilarImagesAsync(queryEmbedding, _config.MaxSearchResults);
+            metrics.SearchTime = stopwatch.Elapsed - searchStart;
+            metrics.ResultsProcessed = searchResults.Count;
+
+            result.Results = searchResults;
+
+            if (searchResults.Count == 0)
+            {
+                Console.WriteLine("No similar images found");
+                result.Summary = "No matching images found. Try a different query or index more images.";
+                return result;
+            }
+
+            Console.WriteLine($"Found {searchResults.Count} similar images:");
+            foreach (var searchResult in searchResults)
+            {
+                Console.WriteLine($"  - {searchResult.Filename} (Score: {searchResult.Score:F3})");
+            }
+
+            // Summarize with Gemma using MCP-aware processing
+            var summarizationStart = stopwatch.Elapsed;
+            result.Summary = await _ollamaService.SummarizeWithGemmaAsync(query, searchResults);
+            metrics.SummarizationTime = stopwatch.Elapsed - summarizationStart;
+            metrics.TokensUsed = EstimateTokensUsed(query, searchResults, result.Summary);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during search: {ex.Message}");
+            result.Summary = $"Search failed: {ex.Message}";
+            return result;
+        }
+        finally
+        {
+            stopwatch.Stop();
+            result.Metrics = metrics;
+            _lastMetrics = metrics;
         }
     }
 

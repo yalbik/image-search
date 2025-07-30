@@ -203,12 +203,13 @@ public class RedisVectorService : IRedisVectorService
                 
                 if (float.TryParse(scoreStr, out float score))
                 {
+                    var imagePath = GetAbsoluteImagePath(filename);
                     results.Add(new SearchResult
                     {
                         Filename = filename,
                         Description = description,
                         Score = 1.0f - score, // Convert distance to similarity
-                        ImagePath = Path.Combine(_config.ImagesPath, filename)
+                        ImagePath = imagePath
                     });
                 }
             }
@@ -303,6 +304,42 @@ public class RedisVectorService : IRedisVectorService
         var vector = new float[bytes.Length / sizeof(float)];
         Buffer.BlockCopy(bytes, 0, vector, 0, bytes.Length);
         return vector;
+    }
+
+    private string GetAbsoluteImagePath(string filename)
+    {
+        // If filename is already an absolute path, return it
+        if (Path.IsPathRooted(filename))
+        {
+            return filename;
+        }
+        
+        // Find the solution root directory
+        var currentDirectory = Directory.GetCurrentDirectory();
+        var solutionRoot = FindSolutionRoot(currentDirectory) ?? currentDirectory;
+        
+        // Construct path directly from solution root + my_images + filename
+        var absolutePath = Path.Combine(solutionRoot, "my_images", filename);
+        
+        return absolutePath;
+    }
+    
+    private string? FindSolutionRoot(string startPath)
+    {
+        var directory = new DirectoryInfo(startPath);
+        
+        while (directory != null)
+        {
+            // Look for .sln file or my_images folder
+            if (directory.GetFiles("*.sln").Length > 0 || 
+                directory.GetDirectories("my_images").Length > 0)
+            {
+                return directory.FullName;
+            }
+            directory = directory.Parent;
+        }
+        
+        return null;
     }
 
     public void Dispose()

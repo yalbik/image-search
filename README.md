@@ -10,6 +10,8 @@ A powerful .NET application that combines **Ollama AI models** with **Redis Stac
 - **Smart Summarization**: Gemma model provides intelligent result summaries
 - **Deduplication**: Prevents re-processing unchanged images
 - **MCP Context Management**: Optimizes AI model context windows for better performance
+- **🎨 GUI Interface**: Windows Forms application with visual thumbnails and click-to-expand image viewing
+- **📊 Performance Metrics**: Real-time display of search and indexing performance
 
 ## 🛠️ Prerequisites
 
@@ -102,7 +104,30 @@ dotnet build
 
 ## 🏃‍♂️ Running the Application
 
-### 1. Prepare Your Images
+You can run the application in two ways:
+
+### **Console Version** (Text-based interface)
+
+```bash
+cd OllamaRedisImageSearch
+dotnet run
+```
+
+### **GUI Version** (Windows Forms interface with thumbnails)
+
+```bash
+cd OllamaRedisImageSearch.GUI
+dotnet run
+```
+
+The GUI version provides:
+- **Visual thumbnail grid** of search results
+- **Click-to-expand** image viewer with descriptions
+- **Real-time AI summaries** displayed alongside results
+- **Progress indicators** for indexing and searching
+- **Performance metrics** display
+
+### Setting Up Your Images
 
 Place your image files (.jpg, .jpeg, .png) in the `my_images` folder:
 

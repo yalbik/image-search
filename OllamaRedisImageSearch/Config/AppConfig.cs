@@ -13,9 +13,9 @@ public class AppConfig
     public int MaxConcurrentOperations { get; set; } = 5;
     
     // Model configurations
-    public string VisionModel { get; set; } = "llava:7b";
+    public string VisionModel { get; set; } = "llava:13b";
     public string EmbeddingModel { get; set; } = "nomic-embed-text:latest";
-    public string SummarizationModel { get; set; } = "gemma3n:e4b";
+    public string SummarizationModel { get; set; } = "gemma3:4b";
     
     // Retry configurations
     public int MaxRetries { get; set; } = 3;

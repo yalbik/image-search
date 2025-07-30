@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OllamaRedisImageSearch", "O
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OllamaRedisImageSearch.Tests", "OllamaRedisImageSearch.Tests\OllamaRedisImageSearch.Tests.csproj", "{F69534BD-FBE6-4EAB-BBEA-FA0DCA60A344}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OllamaRedisImageSearch.GUI", "OllamaRedisImageSearch.GUI\OllamaRedisImageSearch.GUI.csproj", "{DCB99347-E990-49FA-ACE1-54134A4C6FFB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,18 @@ Global
 		{F69534BD-FBE6-4EAB-BBEA-FA0DCA60A344}.Release|x64.Build.0 = Release|Any CPU
 		{F69534BD-FBE6-4EAB-BBEA-FA0DCA60A344}.Release|x86.ActiveCfg = Release|Any CPU
 		{F69534BD-FBE6-4EAB-BBEA-FA0DCA60A344}.Release|x86.Build.0 = Release|Any CPU
+		{DCB99347-E990-49FA-ACE1-54134A4C6FFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCB99347-E990-49FA-ACE1-54134A4C6FFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCB99347-E990-49FA-ACE1-54134A4C6FFB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DCB99347-E990-49FA-ACE1-54134A4C6FFB}.Debug|x64.Build.0 = Debug|Any CPU
+		{DCB99347-E990-49FA-ACE1-54134A4C6FFB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DCB99347-E990-49FA-ACE1-54134A4C6FFB}.Debug|x86.Build.0 = Debug|Any CPU
+		{DCB99347-E990-49FA-ACE1-54134A4C6FFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCB99347-E990-49FA-ACE1-54134A4C6FFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCB99347-E990-49FA-ACE1-54134A4C6FFB}.Release|x64.ActiveCfg = Release|Any CPU
+		{DCB99347-E990-49FA-ACE1-54134A4C6FFB}.Release|x64.Build.0 = Release|Any CPU
+		{DCB99347-E990-49FA-ACE1-54134A4C6FFB}.Release|x86.ActiveCfg = Release|Any CPU
+		{DCB99347-E990-49FA-ACE1-54134A4C6FFB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
